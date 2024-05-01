@@ -93,5 +93,4 @@ testcase_list = [
      'meter': METER,
      'gateway': GATEWAY,
      },
-
 ]
