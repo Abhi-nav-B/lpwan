@@ -18,3 +18,17 @@ if __name__ == '__main__':
 
         # start test execution
         tests_execution.execute_test(**test)
+
+    # import time
+    # from common_fn import check_for_execution
+    #
+    # # smarts and api service integration
+    # while True:
+    #     args = check_for_execution()
+    #     header = list(args[-1].keys())
+    #     values = list(args[-1].values())
+    #     args.pop()
+    #     args.append(header)
+    #     args.append(values)
+    #     tests_execution.call_service(*args)
+    #     time.sleep(60)
