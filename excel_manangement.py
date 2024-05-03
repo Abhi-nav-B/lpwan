@@ -5,12 +5,14 @@ import logging
 from openpyxl.styles import PatternFill
 from openpyxl.formatting.rule import FormulaRule
 from common_fn import exception_log
+import copy
 
+# logger = logging.getLogger(__name__)
 logger = logging.getLogger('my_logger')
 
 
 # to store all the key values in a dict from a json,
-# used in get_all_keys_values function
+# used in get_all_keys_values function, clear it before using the function
 list_of_dict = list()
 
 
@@ -98,15 +100,15 @@ def read_rows(excel_file_path: str, start_row_index: int | None = None,
         exception_log(e)
 
 
-def write_in_new_xlsx(file_path: str, sheet_name, data_to_write: dict, column_index: int = 1):
+def write_in_new_xlsx(file_path: str, sheet_name, data_to_write: list, column_index: int = 1):
     try:
         with OpenXlsxFile(file_path) as wb:
             wb.create_sheet(title=str(sheet_name), index=0)
             wb.remove(wb.worksheets[-1])
 
             sheet = wb.active
-            list_of_dict.clear()  # clear old data if there is any
-            data_to_write = get_all_keys_values(data_to_write)
+            # list_of_dict.clear()  # clear old data if there is any
+            # data_to_write = get_all_keys_values(data_to_write)
 
             for i, data_dict in enumerate(data_to_write):
                 for k, v in data_dict.items():
@@ -120,7 +122,7 @@ def write_in_new_xlsx(file_path: str, sheet_name, data_to_write: dict, column_in
         exception_log(e)
 
 
-def write_in_existing_xlsx(file_path: str, sheet_name, data_to_write: dict, column_index: int = 1):
+def write_in_existing_xlsx(file_path: str, sheet_name, data_to_write: dict | list, column_index: int = 1):
     try:
         with LoadXlsxFile(file_path) as wb:
             if str(sheet_name) not in wb.sheetnames:
@@ -128,23 +130,34 @@ def write_in_existing_xlsx(file_path: str, sheet_name, data_to_write: dict, colu
 
             wb.active = wb[f'{sheet_name}']
             sheet = wb.active
-            list_of_dict.clear()  # clear old data if there is any
-            data_to_write = get_all_keys_values(data_to_write)
 
-            for i, data_dict in enumerate(data_to_write):
-                for k, v in data_dict.items():
+            if type(data_to_write) is dict:
+                # list_of_dict.clear()  # clear old data if there is any
+                # data_to_write = get_all_keys_values(data_to_write)
+
+                for i, data_dict in enumerate(data_to_write):
+                    for k, v in data_dict.items():
+                        cell_ref = sheet.cell(row=i + 1, column=column_index)
+                        cell_ref.value = str(k)
+
+                        cell_ref = sheet.cell(row=i + 1, column=column_index + 1)
+                        cell_ref.value = str(v)
+                        # cell_ref.value = str(v)
+
+            else:
+                for i, item in enumerate(data_to_write):
                     cell_ref = sheet.cell(row=i + 1, column=column_index)
-                    cell_ref.value = str(k)
+                    cell_ref.value = str(list(item.keys())[0])
 
                     cell_ref = sheet.cell(row=i + 1, column=column_index + 1)
-                    cell_ref.value = str(v)
-                    cell_ref.value = str(v)
+                    cell_ref.value = str(list(item.values())[0])
+
 
     except Exception as e:
         exception_log(e)
 
 
-def write_in_xl(file_path: str, sheet_name, data_to_write: dict, column_index: int = 1):
+def write_in_xl(file_path: str, sheet_name, data_to_write: list, column_index: int = 1):
     if os.path.isfile(file_path):
         write_in_existing_xlsx(file_path, sheet_name, data_to_write, column_index)
     else:
@@ -225,25 +238,10 @@ def get_all_keys_values(data: dict) -> list[{str, str}]:
                 # print(k, v)
                 list_of_dict.append({k: v})
 
-        return list_of_dict
+        return copy.deepcopy(list_of_dict)
 
     except Exception as e:
         exception_log(e)
 
 
-if __name__ == '__main__':
-    a = {"SupplyType": 0, "ServicePointNo": "SAM000012597", "DeviceNo": "SAM000012597", "ScheduledTasks": [
-        {"ScheduleTime": {"StartTime": {"Hour": 0, "Minute": 0, "Second": 0}, "Frequency": 39}, "DataType": 0},
-        {"ScheduleTime": {"StartTime": {"Hour": 0, "Minute": 0, "Second": 0}, "Frequency": 39}, "DataType": 1},
-        {"ScheduleTime": {"StartTime": {"Hour": 0, "Minute": 0, "Second": 0}, "Frequency": 34}, "DataType": 2},
-        {"ScheduleTime": {"StartTime": {"Hour": 0, "Minute": 0, "Second": 0}, "Frequency": 39}, "DataType": 3,
-         "ProfileParameters": [0, 2]},
-        {"ScheduleTime": {"StartTime": {"Hour": 0, "Minute": 0, "Second": 0}, "Frequency": 39}, "DataType": 4,
-         "ProfileParameters": [6]},
-        {"ScheduleTime": {"StartTime": {"Hour": 0, "Minute": 0, "Second": 0}, "Frequency": 39}, "DataType": 5,
-         "EventLogs": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}]}
 
-    write_in_new_xlsx(r'.\supporting\my_sheet.xlsx', 1, a, 1)
-    write_in_existing_xlsx(r'.\supporting\my_sheet.xlsx', 1, a, 3)
-    compare_data(r'.\supporting\my_sheet.xlsx', 1, 1, 3, 5)
-    compare_data(r'.\supporting\my_sheet.xlsx', 1, 2, 4, 6)
