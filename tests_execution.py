@@ -27,13 +27,14 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
                     pass
 
                 case 'change_tariff_plan':
-                    pass
+                    service.change_tariff_plan(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
 
                 case 'change_price':
-                    pass
+                    service.change_price(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
 
                 case 'change_prepayment_configuration':
-                    pass
+                    service.change_prepayment_configuration(tp_number, iteration_from + iteration,
+                                                            header, data_from_xl, spn, meter)
 
                 case 'change_billing_dates':
                     service.change_billing_dates(tp_number, iteration_from + iteration,
@@ -46,10 +47,12 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
                     pass
 
                 case 'change_profile_configuration':
-                    pass
+                    service.change_profile_configuration(tp_number, iteration_from + iteration,
+                                                 header, data_from_xl, spn, meter)
 
                 case 'change_event_configuration':
-                    pass
+                    service.change_event_configuration(tp_number, iteration_from + iteration,
+                                                       header, data_from_xl, spn, meter)
 
                 case 'change_dst_configuration':
                     pass
@@ -61,12 +64,10 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
                     pass
 
                 case 'set_schedule':
-                    pass
                     service.set_schedule(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
 
                 case 'get_Supply_Control':
-                    pass
-                    service.get_supply_control(tp_number, iteration_from + iteration,  header, data_from_xl, spn, meter)
+                    service.get_supply_control(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
 
             logger.info(f'{"Execution completed":-^80}')
             logger.info(f'{"":_<80}')
@@ -75,7 +76,7 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
         exception_log(e)
 
 
-def call_service(tp_number: str, service_name: str, spn: str, meter: str, gateway: str, header: list, file_data: list):
+def call_service(tp_number: str, service_name: str, spn: str, meter: str, gateway: str, payload: dict):
     match service_name:
         case 'get_Supply_Control':
-            service.get_supply_control(tp_number, 1, header, file_data, spn, meter)
+            service.get_supply_control(tp_number, service_name, spn, meter, payload)
