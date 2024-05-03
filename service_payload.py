@@ -3,7 +3,7 @@ from common_fn import time_in_seconds
 import json
 
 
-def default_payload(meter: str, spn: str):
+def default_payload(spn: str, meter: str):
     payload = {
         'HesId': get_hes_id(),
         'SupplyType': 0,
@@ -14,16 +14,16 @@ def default_payload(meter: str, spn: str):
     return payload
 
 
-def set_schedule_payload(meter: str, spn: str, payload_data: str) -> dict:
-    payload = default_payload(meter, spn)
+def set_schedule_payload(spn: str, meter: str, payload_data: str) -> dict:
+    payload = default_payload(spn, meter)
     payload.update({'ScheduledTasks': json.loads(payload_data.replace('\\n', ''))})
 
     # 'ScheduledTasks': json.loads(str(payload_data[9])[6:-1].replace('\\n', ''))
     return payload
 
 
-def get_schedule_payload(meter: str, spn: str) -> dict:
-    return default_payload(meter, spn)
+def get_schedule_payload(spn: str, meter: str) -> dict:
+    return default_payload(spn, meter)
 
 
 def get_supply_control_payload(spn: str, meter: str, payload_data: dict):
@@ -36,8 +36,8 @@ def get_supply_control_payload(spn: str, meter: str, payload_data: dict):
     return payload
 
 
-def change_price_payload(meter: str, spn: str, payload_data: dict) -> dict:
-    payload = default_payload(meter, spn)
+def change_price_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
 
     payload_data['StandingCharge'] = float(payload_data['StandingCharge'])
     payload_data['ImportPrices'] = [float(item) for item in payload_data['ImportPrices']]
@@ -51,8 +51,8 @@ def change_price_payload(meter: str, spn: str, payload_data: dict) -> dict:
     return payload
 
 
-def get_meter_configuration_payload(meter: str, spn: str, is_delayed: bool) -> dict:
-    payload = default_payload(meter, spn)
+def get_meter_configuration_payload(spn: str, meter: str, is_delayed: bool) -> dict:
+    payload = default_payload(spn, meter)
 
     if is_delayed:
         payload.update({'MeterConfigurationType': 1})
@@ -62,23 +62,23 @@ def get_meter_configuration_payload(meter: str, spn: str, is_delayed: bool) -> d
     return payload
 
 
-def change_prepayment_configuration_payload(meter: str, spn: str, payload_data: dict) -> dict:
-    payload = default_payload(meter, spn)
+def change_prepayment_configuration_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
 
     payload_data['LoadLimitBelowCutOff'] = float(payload_data['LoadLimitBelowCutOff'])
     payload.update({'PrepaymentConfig': payload_data})
     return payload
 
 
-def change_billing_dates_payload(meter: str, spn: str, payload_data: dict) -> dict:
-    payload = default_payload(meter, spn)
+def change_billing_dates_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
     payload_data['Interval']['StartDate'] = rf"/Date({time_in_seconds(payload_data['Interval']['StartDate'])})/"
     payload.update({'BillingPeriod': payload_data})
     return payload
 
 
-def change_tariff_plan_payload(meter: str, spn: str, payload_data: dict) -> dict:
-    payload = default_payload(meter, spn)
+def change_tariff_plan_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
 
     payload_data['TariffScheme']['StandingCharge'] = float(payload_data['TariffScheme']['StandingCharge'])
     payload_data['TariffScheme']['TaxConfig'] = {key: float(value) for key, value in
@@ -111,18 +111,18 @@ def change_tariff_plan_payload(meter: str, spn: str, payload_data: dict) -> dict
     return payload
 
 
-def change_event_configuration_payload(meter: str, spn: str, payload_data: dict) -> dict:
-    payload = default_payload(meter, spn)
+def change_event_configuration_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
     payload.update({'EventConfig': payload_data})
     return payload
 
 
-def get_event_configuration_payload(meter: str, spn: str) -> dict:
-    return default_payload(meter, spn)
+def get_event_configuration_payload(spn: str, meter: str) -> dict:
+    return default_payload(spn, meter)
 
 
-def change_profile_configuration_payload(meter: str, spn: str, payload_data: dict) -> dict:
-    payload = default_payload(meter, spn)
+def change_profile_configuration_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
 
     payload.update({'StandardProfile': payload_data['StandardProfile']})
     if 'DiagnosticProfile' in payload_data:
@@ -130,5 +130,5 @@ def change_profile_configuration_payload(meter: str, spn: str, payload_data: dic
     return payload
 
 
-def get_profile_configuration_payload(meter: str, spn: str) -> dict:
-    return default_payload(meter, spn)
+def get_profile_configuration_payload(spn: str, meter: str) -> dict:
+    return default_payload(spn, meter)
