@@ -33,11 +33,8 @@ def start_logger(logger_path: str):
         default_file_name = f'{datetime.datetime.now().strftime("%Y%m%d")}.log'
         filename = os.path.join(logger_path, default_file_name)
 
-    logger = logging.getLogger('my_logger')
-    logger.setLevel(logging.INFO)
-
-    # logger.addHandler(logging.FileHandler(filename))
-    # logger.addHandler(logging.Formatter('{asctime} | {filename:18} | Line {lineno:4} | {levelname:8} | {message}'))
+    lgr = logging.getLogger('my_logger')
+    lgr.setLevel(logging.INFO)
 
     # create file handler that logs debug and higher level messages
     fh = logging.FileHandler(filename)
@@ -55,8 +52,8 @@ def start_logger(logger_path: str):
     fh.setFormatter(formatter)
 
     # add the handlers to logger
-    logger.addHandler(ch)
-    logger.addHandler(fh)
+    lgr.addHandler(ch)
+    lgr.addHandler(fh)
 
     time.sleep(2)
 
@@ -228,7 +225,6 @@ def dict_filter(response_dict: dict, kw_filter: list):
         return filtered_list
     except Exception as e:
         print(e)
-
 
 
 if __name__ == '__main__':
