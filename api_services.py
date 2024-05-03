@@ -77,7 +77,7 @@ def set_schedule(tp_number, iteration, header: str, data_from_xl: list, spn: str
 
         # get payload for service
         data_from_xl = data_from_xl['ScheduledTasks']
-        payload = sp.set_schedule_payload(meter, spn, data_from_xl)
+        payload = sp.set_schedule_payload(spn, meter, data_from_xl)
 
         # print(f'Request Data: {payload}')
         logger.info(f'Request Data: {payload}')
@@ -94,7 +94,7 @@ def set_schedule(tp_number, iteration, header: str, data_from_xl: list, spn: str
         response = post_request('SetSchedule', payload)
         if response.status_code in [200, 202]:
             get_task_reply(response.text)
-            get_schedule(tp_number, iteration, meter, spn)
+            get_schedule(tp_number, iteration, spn, meter)
         else:
             # print(STATUS_CODE.get(response.status_code))
             logger.info(STATUS_CODE.get(response.status_code))
@@ -103,12 +103,12 @@ def set_schedule(tp_number, iteration, header: str, data_from_xl: list, spn: str
         exception_log(e)
 
 
-def get_schedule(tp_number, iteration, meter, spn):
+def get_schedule(tp_number, iteration, spn, meter):
     try:
         # print(f'Service called: {get_schedule.__name__})
         logger.info(f'Service called: {get_schedule.__name__}')
 
-        response = post_request('GetSchedule', sp.get_schedule_payload(meter, spn))
+        response = post_request('GetSchedule', sp.get_schedule_payload(spn, meter))
         get_schedule_reply(tp_number, iteration, int(response.text))
 
     except Exception as e:
@@ -154,7 +154,7 @@ def get_supply_control(tp_number, iteration, header: list, data_from_xl: list, s
         data_from_xl = dict(zip(header, data_from_xl))
 
         # get payload for service
-        payload = sp.get_supply_control_payload(meter, spn, data_from_xl)
+        payload = sp.get_supply_control_payload(spn, meter, data_from_xl)
 
         # print(f'Request Data: {payload}')
         logger.info(f'Request Data: {payload}')
@@ -228,7 +228,7 @@ def change_price(tp_number, iteration, header: str, data_from_xl: list, spn: str
         # get payload for service
         data_from_xl = json.loads(data_from_xl['PriceConfig'])
         # data_from_xl['PriceConfig'] = json.loads(data_from_xl['PriceConfig'])
-        payload = sp.change_price_payload(meter, spn, data_from_xl)
+        payload = sp.change_price_payload(spn, meter, data_from_xl)
 
         # print(f'Request Data: {payload}')
         logger.info(f'Request Data: {payload}')
@@ -247,7 +247,7 @@ def change_price(tp_number, iteration, header: str, data_from_xl: list, spn: str
         if response.status_code in [200, 202]:
             get_task_reply(response.text)
 
-            get_meter_configuration(tp_number, iteration, meter, spn, 'ChangePrice',
+            get_meter_configuration(tp_number, iteration, spn, meter, 'ChangePrice',
                                     [list(item.keys())[0] for item in dict_to_update])
         else:
             # print(STATUS_CODE.get(response.status_code))
@@ -273,7 +273,7 @@ def change_prepayment_configuration(tp_number, iteration, header: str, data_from
         # get payload for service
         data_from_xl = json.loads(data_from_xl['PrepaymentConfig'])
         # data_from_xl['PrepaymentConfig'] = json.loads(data_from_xl['PrepaymentConfig'])
-        payload = sp.change_prepayment_configuration_payload(meter, spn, data_from_xl)
+        payload = sp.change_prepayment_configuration_payload(spn, meter, data_from_xl)
 
         # print(f'Request Data: {payload}')
         logger.info(f'Request Data: {payload}')
@@ -291,7 +291,7 @@ def change_prepayment_configuration(tp_number, iteration, header: str, data_from
         response = post_request('ChangePrepaymentConfiguration', payload)
         if response.status_code in [200, 202]:
             get_task_reply(response.text)
-            get_meter_configuration(tp_number, iteration, meter, spn, 'PrepaymentConfig',
+            get_meter_configuration(tp_number, iteration, spn, meter, 'PrepaymentConfig',
                                     [list(item.keys())[0] for item in dict_to_update])
         else:
             # print(STATUS_CODE.get(response.status_code))
@@ -317,7 +317,7 @@ def change_billing_dates(tp_number, iteration, header: str, data_from_xl: list, 
         # get payload for service
         data_from_xl = json.loads(data_from_xl['BillingPeriod'].replace('\\n', ''))
 
-        payload = sp.change_billing_dates_payload(meter, spn, data_from_xl)
+        payload = sp.change_billing_dates_payload(spn, meter, data_from_xl)
 
         # print(f'Request Data: {payload}')
         logger.info(f'Request Data: {payload}')
@@ -335,7 +335,7 @@ def change_billing_dates(tp_number, iteration, header: str, data_from_xl: list, 
         response = post_request('ChangeBillingDates', payload)
         if response.status_code in [200, 202]:
             get_task_reply(response.text)
-            get_meter_configuration(tp_number, iteration, meter, spn, 'BillingPeriod',
+            get_meter_configuration(tp_number, iteration, spn, meter, 'BillingPeriod',
                                     [list(item.keys())[0] for item in dict_to_update])
 
         else:
@@ -367,7 +367,7 @@ def change_tariff_plan(tp_number, iteration, header: str, data_from_xl: list, sp
         data_from_xl['PrepaymentConfig'] = json.loads(data_from_xl['PrepaymentConfig'])
         data_from_xl['BillingPeriod'] = json.loads(data_from_xl['BillingPeriod'])
 
-        payload = sp.change_tariff_plan_payload(meter, spn, data_from_xl)
+        payload = sp.change_tariff_plan_payload(spn, meter, data_from_xl)
 
         # print(f'Request Data: {payload}')
         logger.info(f'Request Data: {payload}')
@@ -385,7 +385,7 @@ def change_tariff_plan(tp_number, iteration, header: str, data_from_xl: list, sp
         response = post_request('ChangeTariffPlan', payload)
         if response.status_code in [200, 202]:
             get_task_reply(response.text)
-            get_meter_configuration(tp_number, iteration, meter, spn, 'TariffPlan',
+            get_meter_configuration(tp_number, iteration, spn, meter, 'TariffPlan',
                                     [list(item.keys())[0] for item in dict_to_update])
         else:
             # print(STATUS_CODE.get(response.status_code))
@@ -395,14 +395,14 @@ def change_tariff_plan(tp_number, iteration, header: str, data_from_xl: list, sp
         exception_log(e)
 
 
-def get_meter_configuration(tp_number, iteration, meter: str, spn: str, dict_name: str | None = None,
+def get_meter_configuration(tp_number, iteration, spn: str, meter: str, dict_name: str | None = None,
                             kw_filter: list = None):
     try:
         # print(f'Service called: {get_Supply_Control.__name__})
         logger.info(f'Service called: {get_meter_configuration.__name__}')
 
         # get payload for service
-        payload = sp.get_meter_configuration_payload(meter, spn, False)
+        payload = sp.get_meter_configuration_payload(spn, meter, False)
 
         # print(f'Request Data: {payload}')
         logger.info(f'Request Data: {payload}')
@@ -496,7 +496,7 @@ def change_event_configuration(tp_number, iteration, header: str, data_from_xl: 
 
         # get payload for service
         data_from_xl = json.loads(data_from_xl['EventConfig'])
-        payload = sp.change_event_configuration_payload(meter, spn, data_from_xl)
+        payload = sp.change_event_configuration_payload(spn, meter, data_from_xl)
 
         # print(f'Request Data: {payload}')
         logger.info(f'Request Data: {payload}')
@@ -513,7 +513,7 @@ def change_event_configuration(tp_number, iteration, header: str, data_from_xl: 
             get_task_reply(response.text)
             em.list_of_dict.clear()
             dict_to_update = em.get_all_keys_values(dict_to_update)
-            get_event_configuration(tp_number, iteration, meter, spn, [list(item.keys())[0] for item in dict_to_update])
+            get_event_configuration(tp_number, iteration, spn, meter, [list(item.keys())[0] for item in dict_to_update])
         else:
             logger.info(STATUS_CODE.get(response.status_code))
 
@@ -521,12 +521,12 @@ def change_event_configuration(tp_number, iteration, header: str, data_from_xl: 
         exception_log(e)
 
 
-def get_event_configuration(tp_number, iteration, meter, spn, kw_filter: list = None):
+def get_event_configuration(tp_number, iteration, spn, meter, kw_filter: list = None):
     try:
         # print(f'Service called: {get_schedule.__name__})
         logger.info(f'Service called: {get_event_configuration.__name__}')
 
-        response = post_request('GetEventConfiguration', sp.get_event_configuration_payload(meter, spn))
+        response = post_request('GetEventConfiguration', sp.get_event_configuration_payload(spn, meter))
         get_event_configuration_reply(tp_number, iteration, int(response.text), kw_filter)
 
     except Exception as e:
@@ -578,7 +578,7 @@ def change_profile_configuration(tp_number, iteration, header: str, data_from_xl
         data_from_xl['StandardProfile'] = json.loads(data_from_xl['StandardProfile'])
         if 'DiagnosticProfile' in data_from_xl:
             data_from_xl['DiagnosticProfile'] = json.loads(data_from_xl['DiagnosticProfile'])
-        payload = sp.change_profile_configuration_payload(meter, spn, data_from_xl)
+        payload = sp.change_profile_configuration_payload(spn, meter, data_from_xl)
 
         # print(f'Request Data: {payload}')
         logger.info(f'Request Data: {payload}')
@@ -596,7 +596,7 @@ def change_profile_configuration(tp_number, iteration, header: str, data_from_xl
         response = post_request('ChangeProfileConfiguration', payload)
         if response.status_code in [200, 202]:
             get_task_reply(response.text)
-            get_profile_configuration(tp_number, iteration, meter, spn, [list(item.keys())[0] for item in dict_to_update])
+            get_profile_configuration(tp_number, iteration, spn, meter, [list(item.keys())[0] for item in dict_to_update])
         else:
             logger.info(STATUS_CODE.get(response.status_code))
 
@@ -604,12 +604,12 @@ def change_profile_configuration(tp_number, iteration, header: str, data_from_xl
         exception_log(e)
 
 
-def get_profile_configuration(tp_number, iteration, meter, spn, kw_filter: list = None):
+def get_profile_configuration(tp_number, iteration, spn, meter, kw_filter: list = None):
     try:
         # print(f'Service called: {get_schedule.__name__})
         logger.info(f'Service called: {get_profile_configuration.__name__}')
 
-        response = post_request('GetProfileConfiguration', sp.get_profile_configuration_payload(meter, spn))
+        response = post_request('GetProfileConfiguration', sp.get_profile_configuration_payload(spn, meter))
         get_profile_configuration_reply(tp_number, iteration, int(response.text), kw_filter)
 
     except Exception as e:
