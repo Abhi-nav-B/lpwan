@@ -206,22 +206,34 @@ def time_in_seconds(date_time: str):
 #         print(e)
 
 
-def dict_filter(response_dict: dict, kw_filter: list):
+def dict_filter(response_dict: dict, kw_filter: list, is_flat: bool = True):
     try:
         # Clearing global list_of_dict before calling get_all_keys_values
         em.list_of_dict.clear()
-        response_dict = em.get_all_keys_values(response_dict)
         filtered_list = []
-        if kw_filter is not None:
-            # Iterate over each dictionary in the list
-            for element in kw_filter:
-                # Check each key in the current dictionary
-                for item in response_dict:
-                    # If the key is in kw_filter, add it to the filtered_dict
-                    if element in item.keys():
-                        filtered_list.append(item)
-                        response_dict.remove(item)
-                        break
+        if is_flat:
+            response_dict = em.get_all_keys_values(response_dict)
+            if kw_filter is not None:
+                # Iterate over each dictionary in the list
+                for element in kw_filter:
+                    # Check each key in the current dictionary
+                    for item in response_dict:
+                        # If the key is in kw_filter, add it to the filtered_dict
+                        if element in item.keys():
+                            filtered_list.append(item)
+                            response_dict.remove(item)
+                            break
+        else:
+            if kw_filter is not None:
+                # Iterate over each dictionary in the list
+                for element in kw_filter:
+                    # Check each key in the current dictionary
+                    for item in response_dict:
+                        # If the key is in kw_filter, add it to the filtered_dict
+                        if element == item:
+                            filtered_list.append({item: response_dict[item]})
+                            # response_dict.remove(item)
+                            break
         return filtered_list
     except Exception as e:
         print(e)

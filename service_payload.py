@@ -51,14 +51,52 @@ def change_price_payload(spn: str, meter: str, payload_data: dict) -> dict:
     return payload
 
 
-def get_meter_configuration_payload(spn: str, meter: str, is_delayed: bool) -> dict:
+def initialise_meter_payload(spn: str, meter: str, payload_data: dict) -> dict:
     payload = default_payload(spn, meter)
 
-    if is_delayed:
-        payload.update({'MeterConfigurationType': 1})
-    else:
-        payload.update({'MeterConfigurationType': 0})
+    payload_data['TariffScheme']['StandingCharge'] = float(payload_data['TariffScheme']['StandingCharge'])
+    payload_data['TariffScheme']['TaxConfig'] = {key: float(value) for key, value in
+                                                 payload_data['TariffScheme']['TaxConfig'].items()}
+    if payload_data['TariffScheme']['Import']['ChargingType'] == 0:
+        payload_data['TariffScheme']['Import']['Block']['BlockThresholds'] = [float(item) for item in
+                                                                              payload_data['TariffScheme']['Import'][
+                                                                              'Block']['BlockThresholds']]
+        payload_data['TariffScheme']['Import']['Block']['BlockPrices'] = [float(item) for item in
+                                                                          payload_data['TariffScheme']['Import']
+                                                                          ['Block']['BlockPrices']]
+        payload_data['TariffScheme']['Import']['Block']['BlockPeriod']['StartDate'] = rf"/Date({time_in_seconds(
+            payload_data['TariffScheme']['Import']['Block']['BlockPeriod']['StartDate'])})/"
 
+    elif payload_data['TariffScheme']['Import']['ChargingType'] == 1:
+        payload_data['TariffScheme']['Import']['Tou']['TierPrices'] = [float(item) for item in
+                                                                       payload_data['TariffScheme']['Import']['Tou']
+                                                                       ['TierPrices']]
+        payload_data['TariffScheme']['Export']['Tou']['TierPrices'] = [float(item) for item in
+                                                                       payload_data['TariffScheme']['Export']['Tou']
+                                                                       ['TierPrices']]
+    payload.update({'DisconnectionAllowed': bool(payload_data['DisconnectionAllowed'])})
+    payload.update({'TariffScheme': payload_data['TariffScheme']})
+    if 'PrepaymentConfig' in payload_data:
+        payload_data['PrepaymentConfig']['LoadLimitBelowCutOff'] = (
+            float(payload_data['PrepaymentConfig']['LoadLimitBelowCutOff']))
+        payload.update({'PrepaymentConfig': payload_data['PrepaymentConfig']})
+    payload.update({'BillingPeriod': payload_data['BillingPeriod']})
+    payload_data['BillingPeriod']['Interval'][
+        'StartDate'] = rf"/Date({time_in_seconds(payload_data['BillingPeriod']['Interval']['StartDate'])})/"
+    if 'GasConfig' in payload_data:
+        payload_data['GasConfig']['ConversionFactor'] = (
+            float(payload_data['GasConfig']['ConversionFactor']))
+        payload_data['GasConfig']['CalorificValue'] = (
+            float(payload_data['GasConfig']['CalorificValue']))
+        payload.update({'GasConfig': payload_data['GasConfig']})
+    if 'ImportCO2Config' in payload_data:
+        payload_data['ImportCO2Config']['CO2Factor'] = (
+            float(payload_data['ImportCO2Config']['CO2Factor']))
+        payload.update({'ImportCO2Config': payload_data['ImportCO2Config']})
+    if 'ExportCO2Config' in payload_data:
+        payload_data['ExportCO2Config']['CO2Factor'] = (
+            float(payload_data['ExportCO2Config']['CO2Factor']))
+        payload.update({'ExportCO2Config': payload_data['ExportCO2Config']})
     return payload
 
 
@@ -67,6 +105,40 @@ def change_prepayment_configuration_payload(spn: str, meter: str, payload_data: 
 
     payload_data['LoadLimitBelowCutOff'] = float(payload_data['LoadLimitBelowCutOff'])
     payload.update({'PrepaymentConfig': payload_data})
+    return payload
+
+
+def change_gas_parameters_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
+
+    payload_data['ConversionFactor'] = float(payload_data['ConversionFactor'])
+    payload_data['CalorificValue'] = float(payload_data['CalorificValue'])
+    payload.update({'GasConfig': payload_data})
+    return payload
+
+
+def change_co2_configuration_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
+
+    if 'ImportCO2Config' in payload_data:
+        payload_data['ImportCO2Config']['CO2Factor'] = (
+            float(payload_data['ImportCO2Config']['CO2Factor']))
+        payload.update({'ImportCO2Config': payload_data['ImportCO2Config']})
+    if 'ExportCO2Config' in payload_data:
+        payload_data['ExportCO2Config']['CO2Factor'] = (
+            float(payload_data['ExportCO2Config']['CO2Factor']))
+        payload.update({'ExportCO2Config': payload_data['ExportCO2Config']})
+    return payload
+
+
+def get_meter_configuration_payload(spn: str, meter: str, is_delayed: bool) -> dict:
+    payload = default_payload(spn, meter)
+
+    if is_delayed:
+        payload.update({'MeterConfigurationType': 1})
+    else:
+        payload.update({'MeterConfigurationType': 0})
+
     return payload
 
 
@@ -131,4 +203,17 @@ def change_profile_configuration_payload(spn: str, meter: str, payload_data: dic
 
 
 def get_profile_configuration_payload(spn: str, meter: str) -> dict:
+    return default_payload(spn, meter)
+
+
+def change_system_parameters_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
+    payload_list = list(payload_data['ParamSettings'].keys())
+    payload_list.sort()
+    payload_data_result = {i: payload_data['ParamSettings'][i] for i in payload_list}
+    payload.update({'ParamSettings': payload_data_result})
+    return payload, payload_list
+
+
+def get_system_parameters_payload(spn: str, meter: str) -> dict:
     return default_payload(spn, meter)

@@ -302,6 +302,50 @@ def change_prepayment_configuration(tp_number, iteration, header: str, data_from
 
 
 @duration
+def change_gas_parameters(tp_number, iteration, header: str, data_from_xl: list, spn: str, meter: str):
+    try:
+        # print(f'Service called: {set_schedule.__name__})
+        logger.info(f'Service called: {change_gas_parameters.__name__}')
+
+        # converting excel data to a list
+        header = xl_data_to_list(header)
+        data_from_xl = xl_data_to_list(data_from_xl)
+
+        # converting header and data_from_list to dict
+        data_from_xl = dict(zip(header, data_from_xl))
+
+        # get payload for service
+        data_from_xl = json.loads(data_from_xl['GasConfig'])
+        # data_from_xl['PrepaymentConfig'] = json.loads(data_from_xl['PrepaymentConfig'])
+        payload = sp.change_gas_parameters_payload(spn, meter, data_from_xl)
+
+        # print(f'Request Data: {payload}')
+        logger.info(f'Request Data: {payload}')
+
+        # remove not required dict items
+        dict_to_update = payload.copy()
+        dict_to_update.pop('HesId')
+        dict_to_update.pop('Priority')
+
+        em.list_of_dict.clear()  # clear old data if there is any
+        dict_to_update = em.get_all_keys_values(dict_to_update)
+
+        em.write_in_xl(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, dict_to_update, 1)
+
+        response = post_request('ChangeGasParameters', payload)
+        if response.status_code in [200, 202]:
+            get_task_reply(response.text)
+            get_meter_configuration(tp_number, iteration, spn, meter, 'GasConfig',
+                                    [list(item.keys())[0] for item in dict_to_update])
+        else:
+            # print(STATUS_CODE.get(response.status_code))
+            logger.info(STATUS_CODE.get(response.status_code))
+
+    except Exception as e:
+        exception_log(e)
+
+
+@duration
 def change_billing_dates(tp_number, iteration, header: str, data_from_xl: list, spn: str, meter: str):
     try:
         # print(f'Service called: {set_schedule.__name__})
@@ -395,6 +439,113 @@ def change_tariff_plan(tp_number, iteration, header: str, data_from_xl: list, sp
         exception_log(e)
 
 
+@duration
+def initialise_meter(tp_number, iteration, header: str, data_from_xl: list, spn: str, meter: str):
+    try:
+        # print(f'Service called: {set_schedule.__name__})
+        logger.info(f'Service called: {initialise_meter.__name__}')
+
+        # converting excel data to a list
+        header = xl_data_to_list(header)
+        data_from_xl = xl_data_to_list(data_from_xl)
+
+        # converting header and data_from_list to dict
+        data_from_xl = dict(zip(header, data_from_xl))
+
+        # get payload for service
+        keys = ['DisconnectionAllowed', 'TariffScheme', 'PrepaymentConfig', 'BillingPeriod', 'GasConfig',
+                'ImportCO2Config', 'ExportCO2Config']
+        data_from_xl = {x: data_from_xl[x] for x in keys if data_from_xl.get(x, '') != ''}
+
+        data_from_xl['TariffScheme'] = json.loads(data_from_xl['TariffScheme'])
+        if 'PrepaymentConfig' in data_from_xl:
+            data_from_xl['PrepaymentConfig'] = json.loads(data_from_xl['PrepaymentConfig'])
+        data_from_xl['BillingPeriod'] = json.loads(data_from_xl['BillingPeriod'])
+        if 'GasConfig' in data_from_xl:
+            data_from_xl['GasConfig'] = json.loads(data_from_xl['GasConfig'])
+        if 'ImportCO2Config' in data_from_xl:
+            data_from_xl['ImportCO2Config'] = json.loads(data_from_xl['ImportCO2Config'])
+        if 'ExportCO2Config' in data_from_xl:
+            data_from_xl['ExportCO2Config'] = json.loads(data_from_xl['ExportCO2Config'])
+
+        payload = sp.initialise_meter_payload(spn, meter, data_from_xl)
+
+        # print(f'Request Data: {payload}')
+        logger.info(f'Request Data: {payload}')
+
+        # remove not required dict items
+        dict_to_update = payload.copy()
+        dict_to_update.pop('HesId')
+        dict_to_update.pop('Priority')
+
+        em.list_of_dict.clear()  # clear old data if there is any
+        dict_to_update = em.get_all_keys_values(dict_to_update)
+
+        em.write_in_xl(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, dict_to_update, 1)
+
+        response = post_request('InitialiseMeter', payload)
+        if response.status_code in [200, 202]:
+            get_task_reply(response.text)
+            get_meter_configuration(tp_number, iteration, spn, meter, 'InitialiseMeter',
+                                    [list(item.keys())[0] for item in dict_to_update])
+        else:
+            # print(STATUS_CODE.get(response.status_code))
+            logger.info(STATUS_CODE.get(response.status_code))
+
+    except Exception as e:
+        exception_log(e)
+
+
+@duration
+def change_co2_configuration(tp_number, iteration, header: str, data_from_xl: list, spn: str, meter: str):
+    try:
+        # print(f'Service called: {set_schedule.__name__})
+        logger.info(f'Service called: {change_co2_configuration.__name__}')
+
+        # converting excel data to a list
+        header = xl_data_to_list(header)
+        data_from_xl = xl_data_to_list(data_from_xl)
+
+        # converting header and data_from_list to dict
+        data_from_xl = dict(zip(header, data_from_xl))
+
+        # get payload for service
+        keys = ['ImportCO2Config', 'ExportCO2Config']
+        data_from_xl = {x: data_from_xl[x] for x in keys if data_from_xl.get(x, '') != ''}
+
+        if 'ImportCO2Config' in data_from_xl:
+            data_from_xl['ImportCO2Config'] = json.loads(data_from_xl['ImportCO2Config'])
+        if 'ExportCO2Config' in data_from_xl:
+            data_from_xl['ExportCO2Config'] = json.loads(data_from_xl['ExportCO2Config'])
+
+        payload = sp.change_co2_configuration_payload(spn, meter, data_from_xl)
+
+        # print(f'Request Data: {payload}')
+        logger.info(f'Request Data: {payload}')
+
+        # remove not required dict items
+        dict_to_update = payload.copy()
+        dict_to_update.pop('HesId')
+        dict_to_update.pop('Priority')
+
+        em.list_of_dict.clear()  # clear old data if there is any
+        dict_to_update = em.get_all_keys_values(dict_to_update)
+
+        em.write_in_xl(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, dict_to_update, 1)
+
+        response = post_request('ChangeCO2Configuration', payload)
+        if response.status_code in [200, 202]:
+            get_task_reply(response.text)
+            get_meter_configuration(tp_number, iteration, spn, meter, 'CO2Config',
+                                    [list(item.keys())[0] for item in dict_to_update])
+        else:
+            # print(STATUS_CODE.get(response.status_code))
+            logger.info(STATUS_CODE.get(response.status_code))
+
+    except Exception as e:
+        exception_log(e)
+
+
 def get_meter_configuration(tp_number, iteration, spn: str, meter: str, dict_name: str | None = None,
                             kw_filter: list = None):
     try:
@@ -426,7 +577,6 @@ def get_meter_configuration_reply(tp_number, iteration, wse_id, dict_name: str |
         response = get_request('GetMeterConfigurationReply', wse_id)
         response_dict = json.loads(response.text)
 
-        # print(f'Received Data: {response.text}')
         logger.info(f'Received Data: {response.text}')
 
         new_dict = dict()
@@ -448,11 +598,19 @@ def get_meter_configuration_reply(tp_number, iteration, wse_id, dict_name: str |
                 response_dict["TariffScheme"]["Export"]["Tou"]["ExportPrices"] = response_dict["TariffScheme"]["Export"]["Tou"]["TierPrices"]
                 del response_dict["TariffScheme"]["Export"]["Tou"]["TierPrices"]
 
-        for element in key:
-            new_dict.update({element: response_dict[element]})
+            case 'InitialiseMeter':
+                key = ['SupplyType', 'ServicePointNo', 'DeviceNo', 'DisconnectionAllowed', 'TariffScheme',
+                       'PrepaymentConfig', 'BillingPeriod', 'GasConfig', 'ImportCO2Config', 'ExportCO2Config']
+
+            case 'GasConfig':
+                key = ['SupplyType', 'ServicePointNo', 'DeviceNo', 'GasConfig']
+
+            case 'CO2Config':
+                key = ['SupplyType', 'ServicePointNo', 'DeviceNo', 'ImportCO2Config', 'ExportCO2Config']
+
+        new_dict.update({element: response_dict[element] for element in key if response_dict.get(element, '') != ''})
 
         filtered_dict = dict_filter(new_dict, kw_filter)
-        # filtered_dict['LoadLimitBelowCutOff'] = float(filtered_dict['LoadLimitBelowCutOff'])
 
         for i, item in enumerate(filtered_dict):
             if list(item.keys())[0] == 'LoadLimitBelowCutOff':
@@ -469,6 +627,10 @@ def get_meter_configuration_reply(tp_number, iteration, wse_id, dict_name: str |
                 filtered_dict[i]['ImportPrices'] = [float(element) for element in filtered_dict[i]['ImportPrices']]
             elif list(item.keys())[0] == 'ExportPrices':
                 filtered_dict[i]['ExportPrices'] = [float(element) for element in filtered_dict[i]['ExportPrices']]
+            elif list(item.keys())[0] == 'TierPrices':
+                filtered_dict[i]['TierPrices'] = [float(element) for element in filtered_dict[i]['TierPrices']]
+            elif list(item.keys())[0] == 'CO2Factor':
+                item.update({list(item.keys())[0]: float(list(item.values())[0])})
 
         em.write_in_xl(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, filtered_dict, 3)
         em.compare_data(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, 1, 3, 5)
@@ -639,3 +801,136 @@ def get_profile_configuration_reply(tp_number, iteration, wse_id, kw_filter: lis
 
     except Exception as e:
         exception_log(e)
+
+
+@duration
+def send_text_message(tp_number, iteration, header: str, data_from_xl: list, spn: str, meter: str):
+    try:
+        # print(f'Service called: {set_schedule.__name__})
+        logger.info(f'Service called: {send_text_message.__name__}')
+
+        # converting excel data to a list
+        header = xl_data_to_list(header)
+        data_from_xl = xl_data_to_list(data_from_xl)
+
+        # converting header and data_from_list to dict
+        data_from_xl = dict(zip(header, data_from_xl))
+
+        # get payload for service
+        keys = ['MessageType', 'DisplayTime', 'Duration', 'Contents']
+        data_from_xl = {x: data_from_xl[x] for x in keys}
+
+        payload = sp.send_text_message_payload(spn, meter, data_from_xl)
+
+        # print(f'Request Data: {payload}')
+        logger.info(f'Request Data: {payload}')
+
+        # remove not required dict items
+        dict_to_update = payload.copy()
+        dict_to_update.pop('HesId')
+        dict_to_update.pop('Priority')
+
+        # em.list_of_dict.clear()  # clear old data if there is any
+        # dict_to_update = em.get_all_keys_values(dict_to_update)
+
+        em.write_in_xl(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, dict_to_update, 1)
+
+        response = post_request('SendTextMessage', payload)
+        if response.status_code in [200, 202]:
+            get_task_reply(response.text)
+            get_text_message_receipt(tp_number, iteration, spn, meter, 'TariffPlan',
+                                    [list(item.keys())[0] for item in dict_to_update])
+        else:
+            # print(STATUS_CODE.get(response.status_code))
+            logger.info(STATUS_CODE.get(response.status_code))
+
+    except Exception as e:
+        exception_log(e)
+
+
+@duration
+def change_system_parameters(tp_number, iteration, header: str, data_from_xl: list, spn: str, meter: str):
+    try:
+        # print(f'Service called: {set_schedule.__name__})
+        logger.info(f'Service called: {change_system_parameters.__name__}')
+
+        # converting excel data to a list
+        header = xl_data_to_list(header)
+        data_from_xl = xl_data_to_list(data_from_xl)
+
+        # converting header and data_from_list to dict
+        data_from_xl = dict(zip(header, data_from_xl))
+
+        # get payload for service
+        data_from_xl['ParamSettings'] = json.loads(data_from_xl['ParamSettings'])
+        payload, payload_list = sp.change_system_parameters_payload(spn, meter, data_from_xl)
+
+        # print(f'Request Data: {payload}')
+        logger.info(f'Request Data: {payload}')
+
+        # remove not required dict items
+        dict_to_update = payload.copy()
+        dict_to_update.pop('HesId')
+        dict_to_update.pop('Priority')
+
+        em.list_of_dict.clear()  # clear old data if there is any
+        dict_to_update = em.get_all_keys_values(dict_to_update)
+
+        em.write_in_xl(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, dict_to_update, 1)
+
+        response = post_request('ChangeSystemParameters', payload)
+        if response.status_code in [200, 202]:
+            get_task_reply(response.text)
+            get_system_parameters(tp_number, iteration, spn, meter, [list(item.keys())[0] for item in dict_to_update], payload_list)
+        else:
+            logger.info(STATUS_CODE.get(response.status_code))
+
+    except Exception as e:
+        exception_log(e)
+
+
+def get_system_parameters(tp_number, iteration, spn, meter, kw_filter: list = None, payload_list=None):
+    try:
+        # print(f'Service called: {get_schedule.__name__})
+        logger.info(f'Service called: {get_system_parameters.__name__}')
+
+        response = post_request('GetSystemParameters', sp.get_system_parameters_payload(spn, meter))
+        get_system_parameters_reply(tp_number, iteration, int(response.text), kw_filter, payload_list)
+
+    except Exception as e:
+        exception_log(e)
+
+
+def get_system_parameters_reply(tp_number, iteration, wse_id, kw_filter: list = None, payload_list=None):
+    try:
+        # print(f'Service called: {get_schedule_reply.__name__})
+        logger.info(f'Service called: {get_system_parameters_reply.__name__}')
+
+        response = get_request('GetSystemParametersReply', wse_id)
+        response_dict = json.loads(response.text)
+        response_list = list(response_dict['ParamSettings'].keys())
+        response_list.sort()
+        response_result = {i: response_dict['ParamSettings'][i] for i in response_list}
+        response_dict['ParamSettings'] = dict_filter(response_result, payload_list, False)
+
+        logger.info(f'Received Data: {response.text}')
+        filtered_dict = dict_filter(response_dict, kw_filter)
+
+        em.write_in_xl(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, filtered_dict, 3)
+        em.compare_data(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, 1, 3, 5)
+        em.compare_data(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, 2, 4, 6)
+
+        # print(f'Received data is compared with the requested data.)
+        logger.info(f'Received data is compared with the requested data.')
+
+    except Exception as e:
+        exception_log(e)
+
+
+
+
+
+
+
+
+

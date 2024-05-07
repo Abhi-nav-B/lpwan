@@ -24,7 +24,7 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
 
             match service_name:
                 case 'initialise_meter':
-                    pass
+                    service.initialise_meter(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
 
                 case 'change_tariff_plan':
                     service.change_tariff_plan(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
@@ -41,14 +41,15 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
                                                  header, data_from_xl, spn, meter)
 
                 case 'change_co2_configuration':
-                    pass
+                    service.change_co2_configuration(tp_number, iteration_from + iteration, header, data_from_xl, spn,
+                                                     meter)
 
                 case 'change_currency':
                     pass
 
                 case 'change_profile_configuration':
-                    service.change_profile_configuration(tp_number, iteration_from + iteration,
-                                                 header, data_from_xl, spn, meter)
+                    service.change_profile_configuration(tp_number, iteration_from + iteration, header, data_from_xl,
+                                                         spn, meter)
 
                 case 'change_event_configuration':
                     service.change_event_configuration(tp_number, iteration_from + iteration,
@@ -58,7 +59,8 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
                     pass
 
                 case 'change_system_parameters':
-                    pass
+                    service.change_system_parameters(tp_number, iteration_from + iteration, header, data_from_xl, spn,
+                                                     meter)
 
                 case 'update_device_service_point':
                     pass
@@ -68,6 +70,13 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
 
                 case 'get_Supply_Control':
                     service.get_supply_control(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
+
+                case 'send_text_message':
+                    service.send_text_message(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
+
+                case 'change_gas_parameters':
+                    service.change_gas_parameters(tp_number, iteration_from + iteration, header, data_from_xl, spn,
+                                                  meter)
 
             logger.info(f'{"Execution completed":-^80}')
             logger.info(f'{"":_<80}')
