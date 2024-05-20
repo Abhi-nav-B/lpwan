@@ -4,7 +4,7 @@ import time
 import logging
 import datetime
 import json
-import excel_manangement as em
+import excel_management as em
 
 
 logger = logging.getLogger('my_logger')

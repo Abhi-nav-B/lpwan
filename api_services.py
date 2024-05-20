@@ -2,7 +2,7 @@ import json
 import requests
 import logging
 import service_payload as sp
-import excel_manangement as em
+import excel_management as em
 from requests.auth import HTTPBasicAuth
 from constants import *
 from common_fn import (exception_log, countdown, duration, xl_data_to_list, dict_filter, add_prefix_in_key, key_rename,

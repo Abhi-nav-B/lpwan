@@ -1,4 +1,4 @@
-import excel_manangement as em
+import excel_management as em
 import api_services as service
 import logging
 from common_fn import start_logger, exception_log, duration
