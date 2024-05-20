@@ -10,7 +10,6 @@ logger = logging.getLogger('my_logger')
 @duration
 def execute_test(tp_number: str, service_name: str, test_data_path: str,
                  iteration_from: int, iteration_to: int, spn: str, meter: str, gateway: str):
-
     start_logger(rf'{RESULT_PATH}\{tp_number}\{tp_number}.log')
 
     try:
@@ -23,6 +22,9 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
                         f'{iteration_from + iteration}.')
 
             match service_name:
+                case 'adjust_meter_time':
+                    service.adjust_meter_time(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
+
                 case 'initialise_meter':
                     service.initialise_meter(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
 
@@ -52,11 +54,12 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
                                                          spn, meter)
 
                 case 'change_event_configuration':
-                    service.change_event_configuration(tp_number, iteration_from + iteration,
-                                                       header, data_from_xl, spn, meter)
+                    service.change_event_configuration(tp_number, iteration_from + iteration, header, data_from_xl, spn,
+                                                       meter)
 
                 case 'change_dst_configuration':
-                    pass
+                    service.change_dst_configuration(tp_number, iteration_from + iteration, header, data_from_xl, spn,
+                                                     meter)
 
                 case 'change_system_parameters':
                     service.change_system_parameters(tp_number, iteration_from + iteration, header, data_from_xl, spn,
@@ -77,6 +80,23 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
                 case 'change_gas_parameters':
                     service.change_gas_parameters(tp_number, iteration_from + iteration, header, data_from_xl, spn,
                                                   meter)
+
+                case 'change_demand_limit_configuration':
+                    service.change_demand_limit_configuration(tp_number, iteration_from + iteration, header,
+                                                              data_from_xl, spn, meter)
+
+                case 'change_disconnection_setting':
+                    service.change_disconnection_setting(tp_number, iteration_from + iteration, spn, meter)
+
+                case 'change_data_disclosure_settings':
+                    service.change_data_disclosure_settings(tp_number, iteration_from + iteration, spn, meter)
+
+                case 'set_payment_card_id':
+                    service.set_payment_card_id(tp_number, iteration_from + iteration, header, data_from_xl, spn,
+                                                meter)
+
+                case 'reset_counters':
+                    service.reset_counters(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
 
             logger.info(f'{"Execution completed":-^80}')
             logger.info(f'{"":_<80}')

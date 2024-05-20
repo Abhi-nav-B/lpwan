@@ -7,7 +7,6 @@ from openpyxl.formatting.rule import FormulaRule
 from common_fn import exception_log
 import copy
 
-# logger = logging.getLogger(__name__)
 logger = logging.getLogger('my_logger')
 
 
@@ -68,7 +67,6 @@ class LoadXlsxFile:
 def read_rows(excel_file_path: str, start_row_index: int | None = None,
               end_row_index: int | None = None, sheet_index: int = 0) -> list | bool:
     if start_row_index == 0:
-        # print('Start row index cannot be 0.')
         logger.warning('Start row index cannot be 0.')
         return False
 
@@ -107,8 +105,6 @@ def write_in_new_xlsx(file_path: str, sheet_name, data_to_write: list, column_in
             wb.remove(wb.worksheets[-1])
 
             sheet = wb.active
-            # list_of_dict.clear()  # clear old data if there is any
-            # data_to_write = get_all_keys_values(data_to_write)
 
             for i, data_dict in enumerate(data_to_write):
                 for k, v in data_dict.items():
@@ -132,8 +128,6 @@ def write_in_existing_xlsx(file_path: str, sheet_name, data_to_write: dict | lis
             sheet = wb.active
 
             if type(data_to_write) is dict:
-                # list_of_dict.clear()  # clear old data if there is any
-                # data_to_write = get_all_keys_values(data_to_write)
 
                 for i, data_dict in enumerate(data_to_write):
                     for k, v in data_dict.items():
@@ -142,7 +136,6 @@ def write_in_existing_xlsx(file_path: str, sheet_name, data_to_write: dict | lis
 
                         cell_ref = sheet.cell(row=i + 1, column=column_index + 1)
                         cell_ref.value = str(v)
-                        # cell_ref.value = str(v)
 
             else:
                 for i, item in enumerate(data_to_write):
@@ -151,7 +144,6 @@ def write_in_existing_xlsx(file_path: str, sheet_name, data_to_write: dict | lis
 
                     cell_ref = sheet.cell(row=i + 1, column=column_index + 1)
                     cell_ref.value = str(list(item.values())[0])
-
 
     except Exception as e:
         exception_log(e)
@@ -235,13 +227,9 @@ def get_all_keys_values(data: dict) -> list[{str, str}]:
                         # print(k, v)
                         list_of_dict.append({k: v})
             else:
-                # print(k, v)
                 list_of_dict.append({k: v})
 
         return copy.deepcopy(list_of_dict)
 
     except Exception as e:
         exception_log(e)
-
-
-

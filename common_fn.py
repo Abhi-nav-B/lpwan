@@ -6,24 +6,8 @@ import datetime
 import json
 import excel_manangement as em
 
+
 logger = logging.getLogger('my_logger')
-
-
-# def start_logger(logger_path: str):
-#     if logger_path[logger_path.find('.', 1):].lower() in ['.txt', '.log']:
-#         filename = logger_path
-#     else:
-#         default_file_name = f'{datetime.datetime.now().strftime("%Y%m%d")}.log'
-#         filename = os.path.join(logger_path, default_file_name)
-#
-#     logging.basicConfig(
-#         filename=filename,
-#         filemode='a',
-#         style='{',
-#         format='{asctime} | {filename:18} | Line {lineno:4} | {levelname:8} | {message}',
-#         level=logging.INFO
-#     )
-#     time.sleep(2)
 
 
 def start_logger(logger_path: str):
@@ -61,8 +45,6 @@ def start_logger(logger_path: str):
 def exception_log(e):
     exc_type, exc_obj, exc_tb = sys.exc_info()
     f_name = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    # print((exc_type, f_name, f'Line: {exc_tb.tb_lineno}'))
-    # print(e)
     logger.error((exc_type, f_name, f'Line: {exc_tb.tb_lineno}'))
     logger.error(e)
 
@@ -147,7 +129,6 @@ def return_to_smarts(status: bool):
 def xl_data_to_list(data_from_xl) -> list:
     new_list = list()
 
-    # print(data_from_xl)
     for item in data_from_xl:
         item = str(item)
         item = item[item.find(':') + 1:].replace("'", '')
@@ -165,45 +146,6 @@ def time_in_seconds(date_time: str):
         raise Exception(f'Invalid date time string.')
 
     return int((obj_datetime - datetime.datetime(1970, 1, 1)).total_seconds()) * 1000
-
-
-# def dict_filter(response_dict: dict, kw_filter: list):
-#     # Clearing global list_of_dict before calling get_all_keys_values
-#     em.list_of_dict.clear()
-#     response_dict = em.get_all_keys_values(response_dict)
-#     filtered_dict = {}
-#     if kw_filter is not None:
-#         # Iterate over each dictionary in the list
-#         for item in response_dict:
-#             # Check each key in the current dictionary
-#             for key in item.keys():
-#                 # If the key is in kw_filter, add it to the filtered_dict
-#                 if key in kw_filter:
-#                     filtered_dict[key] = item[key]
-#     return filtered_dict
-#
-#
-
-
-# def dict_filter(response_dict: dict, kw_filter: list):
-#     try:
-#         # Clearing global list_of_dict before calling get_all_keys_values
-#         em.list_of_dict.clear()
-#         response_dict = em.get_all_keys_values(response_dict)
-#         filtered_list = []
-#         if kw_filter is not None:
-#             # Iterate over each dictionary in the list
-#             for item in response_dict:
-#                 # Check each key in the current dictionary
-#                 for key in item.keys():
-#                     # If the key is in kw_filter, add it to the filtered_dict
-#                     if key in kw_filter:
-#                         filtered_list.append({key: item[key]})
-#
-#                         break
-#         return filtered_list
-#     except Exception as e:
-#         print(e)
 
 
 def dict_filter(response_dict: dict, kw_filter: list, is_flat: bool = True):
@@ -237,6 +179,40 @@ def dict_filter(response_dict: dict, kw_filter: list, is_flat: bool = True):
         return filtered_list
     except Exception as e:
         print(e)
+
+
+def add_prefix_in_key(d, prefix):
+    return {f"{prefix}_{k}": v for k, v in d.items()}
+
+
+data_kr_list = []
+
+
+def key_rename(data, parent_key=None) -> list[{str, str}]:
+    for k, v in data.items():
+        current_key = f"{parent_key}_{k}" if parent_key else k
+        if type(v) is dict:
+            key_rename(v, current_key)
+        else:
+            data_kr_list.append({current_key: v})
+    return data_kr_list
+
+
+def convert_timestamp(input_str):              # -->DD/MM/YYYY HH:MM:SS
+    # Find the index of the first '(' and the last ')'
+    start_index = input_str.find('(') + 1
+    end_index = input_str.rfind(')')
+
+    # Extract the timestamp substring
+    timestamp_str = input_str[start_index:end_index]
+
+    # Convert timestamp string to integer
+    timestamp = int(timestamp_str)
+
+    # Convert timestamp to datetime
+    formatted_time = datetime.datetime.fromtimestamp(timestamp / 1000).strftime('%d/%m/%Y %H:%M:%S')
+
+    return formatted_time
 
 
 if __name__ == '__main__':

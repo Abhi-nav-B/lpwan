@@ -4,7 +4,8 @@ SERVICE_POINT = METER
 
 
 testcase_list = [
-    # {'tp_number': 'TPxxxxx-0001-C1',
+    # {
+    #  'tp_number': 'TPxxxxx-0001-C1',
     #  'service_name': 'set_schedule',
     #  'test_data_path': r".\Database\SetSchedule.xls",
     #  'iteration_from': 2,
@@ -13,18 +14,18 @@ testcase_list = [
     #  'meter': METER,
     #  'gateway': GATEWAY,
     #  },
-
-    # {'tp_number': 'TPxxxxx-0002-C1',
-    #  'service_name': 'get_Supply_Control',
-    #  'test_data_path': r".\Database\GetSupplyControlCode.xls",
-    #  'iteration_from': 2,
-    #  'iteration_to': 3,
-    #  'spn': SERVICE_POINT,
-    #  'meter': METER,
-    #  'gateway': GATEWAY,
-    #  },
-
-    # {'tp_number': 'TPxxxxx-0003-C1',
+    {
+     'tp_number': 'TPxxxxx-0002-C1',
+     'service_name': 'get_Supply_Control',
+     'test_data_path': r".\Database\GetSupplyControlCode.xls",
+     'iteration_from': 2,
+     'iteration_to': 3,
+     'spn': SERVICE_POINT,
+     'meter': METER,
+     'gateway': GATEWAY,
+     },
+    # {
+    #  'tp_number': 'TPxxxxx-0003-C1',
     #  'service_name': 'change_price',
     #  'test_data_path': r".\Database\ChangePrice.xls",
     #  'iteration_from': 3,
@@ -33,8 +34,8 @@ testcase_list = [
     #  'meter': METER,
     #  'gateway': GATEWAY,
     #  },
-
-    # {'tp_number': 'TPxxxxx-0004-C1',
+    # {
+    #  'tp_number': 'TPxxxxx-0004-C1',
     #  'service_name': 'change_prepayment_configuration',
     #  'test_data_path': r".\Database\ChangePrepaymentConfiguration.xls",
     #  'iteration_from': 2,
@@ -43,8 +44,8 @@ testcase_list = [
     #  'meter': METER,
     #  'gateway': GATEWAY,
     #  },
-
-    # {'tp_number': 'TPxxxxx-0005-C1',
+    # {
+    #  'tp_number': 'TPxxxxx-0005-C1',
     #  'service_name': 'change_billing_dates',
     #  'test_data_path': r".\Database\ChangeBillingDates.xls",
     #  'iteration_from': 2,
@@ -53,28 +54,28 @@ testcase_list = [
     #  'meter': METER,
     #  'gateway': GATEWAY,
     #  },
-    #
-    {'tp_number': 'TPxxxxx-0006-C1',
-     'service_name': 'change_tariff_plan',
-     'test_data_path': r".\Database\ChangeTariffPlan.xls",
-     'iteration_from': 4,
-     'iteration_to': 4,
-     'spn': SERVICE_POINT,
-     'meter': METER,
-     'gateway': GATEWAY,
-     },
-    #
-    # {'tp_number': 'TPxxxxx-0007-C1',
-    #  'service_name': 'change_event_configuration',
-    #  'test_data_path': r".\Database\ChangeEventConfiguration.xls",
-    #  'iteration_from': 2,
-    #  'iteration_to': 2,
+    # {
+    #  'tp_number': 'TPxxxxx-0006-C1',
+    #  'service_name': 'change_tariff_plan',
+    #  'test_data_path': r".\Database\ChangeTariffPlan.xls",
+    #  'iteration_from': 4,
+    #  'iteration_to': 4,
     #  'spn': SERVICE_POINT,
     #  'meter': METER,
     #  'gateway': GATEWAY,
     #  },
-
-    # {'tp_number': 'TPxxxxx-0009-C1',
+    # {
+    #  'tp_number': 'TPxxxxx-0007-C1',
+    #  'service_name': 'change_event_configuration',
+    #  'test_data_path': r".\Database\ChangeEventConfiguration.xls",
+    #  'iteration_from': 3,
+    #  'iteration_to': 3,
+    #  'spn': SERVICE_POINT,
+    #  'meter': METER,
+    #  'gateway': GATEWAY,
+    #  },
+    # {
+    #  'tp_number': 'TPxxxxx-0009-C1',
     #  'service_name': 'change_profile_configuration',
     #  'test_data_path': r".\Database\ChangeProfileConfiguration.xls",
     #  'iteration_from': 2,
@@ -83,8 +84,8 @@ testcase_list = [
     #  'meter': METER,
     #  'gateway': GATEWAY,
     #  },
-
-    # {'tp_number': 'TPxxxxx-0010-C1',
+    # {
+    #  'tp_number': 'TPxxxxx-0010-C1',
     #  'service_name': 'send_text_message',
     #  'test_data_path': r".\Database\SendTextMessage.xls",
     #  'iteration_from': 2,
@@ -93,8 +94,8 @@ testcase_list = [
     #  'meter': METER,
     #  'gateway': GATEWAY,
     #  },
-
-    # {'tp_number': 'TPxxxxx-0011-C1',
+    # {
+    #  'tp_number': 'TPxxxxx-0011-C1',
     #  'service_name': 'initialise_meter',
     #  'test_data_path': r".\Database\InitialiseMeter.xls",
     #  'iteration_from': 3,
@@ -103,8 +104,8 @@ testcase_list = [
     #  'meter': METER,
     #  'gateway': GATEWAY,
     #  },
-
-    # {'tp_number': 'TPxxxxx-0012-C1',
+    # {
+    #  'tp_number': 'TPxxxxx-0012-C1',
     #  'service_name': 'change_gas_parameters',
     #  'test_data_path': r".\Database\ChangeGasParameters.xls",
     #  'iteration_from': 2,
@@ -113,8 +114,8 @@ testcase_list = [
     #  'meter': METER,
     #  'gateway': GATEWAY,
     #  },
-
-    # {'tp_number': 'TPxxxxx-0013-C1',
+    # {
+    #  'tp_number': 'TPxxxxx-0013-C1',
     #  'service_name': 'change_co2_configuration',
     #  'test_data_path': r".\Database\ChangeCO2Configuration.xls",
     #  'iteration_from': 2,
@@ -123,8 +124,8 @@ testcase_list = [
     #  'meter': METER,
     #  'gateway': GATEWAY,
     #  },
-
-    # {'tp_number': 'TPxxxxx-0014-C1',
+    # {
+    #  'tp_number': 'TPxxxxx-0014-C1',
     #  'service_name': 'change_system_parameters',
     #  'test_data_path': r".\Database\ChangeSystemParameters.xls",
     #  'iteration_from': 18,
@@ -133,6 +134,74 @@ testcase_list = [
     #  'meter': METER,
     #  'gateway': GATEWAY,
     #  },
-
-
+    # {
+    #  'tp_number': 'TPxxxxx-0015-C1',
+    #  'service_name': 'change_dst_configuration',
+    #  'test_data_path': r".\Database\ChangeDstConfiguration.xls",
+    #  'iteration_from': 2,
+    #  'iteration_to': 2,
+    #  'spn': SERVICE_POINT,
+    #  'meter': METER,
+    #  'gateway': GATEWAY,
+    #  },
+    # {
+    #  'tp_number': 'TPxxxxx-0016-C1',
+    #  'service_name': 'change_demand_limit_configuration',
+    #  'test_data_path': r".\Database\ChangeDemandLimitConfiguration.xls",
+    #  'iteration_from': 2,
+    #  'iteration_to': 2,
+    #  'spn': SERVICE_POINT,
+    #  'meter': METER,
+    #  'gateway': GATEWAY,
+    #  },
+    # {
+    #  'tp_number': 'TPxxxxx-0017-C1',
+    #  'service_name': 'change_disconnection_setting',
+    #  'test_data_path': r".\Database\ChangeDisconnectionSetting.xls",
+    #  'iteration_from': 2,
+    #  'iteration_to': 2,
+    #  'spn': SERVICE_POINT,
+    #  'meter': METER,
+    #  'gateway': GATEWAY,
+    #  },
+    # {
+    #  'tp_number': 'TPxxxxx-0018-C1',
+    #  'service_name': 'change_data_disclosure_settings',
+    #  'test_data_path': r".\Database\ChangeDataDisclosureSettings.xls",
+    #  'iteration_from': 2,
+    #  'iteration_to': 2,
+    #  'spn': SERVICE_POINT,
+    #  'meter': METER,
+    #  'gateway': GATEWAY,
+    #  },
+    # {
+    #  'tp_number': 'TPxxxxx-0019-C1',
+    #  'service_name': 'set_payment_card_id',
+    #  'test_data_path': r".\Database\SetPaymentCardId.xls",
+    #  'iteration_from': 2,
+    #  'iteration_to': 2,
+    #  'spn': SERVICE_POINT,
+    #  'meter': METER,
+    #  'gateway': GATEWAY,
+    #  },
+    # {
+    #  'tp_number': 'TPxxxxx-0020-C1',
+    #  'service_name': 'adjust_meter_time',
+    #  'test_data_path': r".\Database\AdjustMeterTime.xls",
+    #  'iteration_from': 2,
+    #  'iteration_to': 2,
+    #  'spn': SERVICE_POINT,
+    #  'meter': METER,
+    #  'gateway': GATEWAY,
+    #  },
+    # {
+    #  'tp_number': 'TPxxxxx-0021-C1',
+    #  'service_name': 'reset_counters',
+    #  'test_data_path': r".\Database\ResetCounters.xls",
+    #  'iteration_from': 2,
+    #  'iteration_to': 2,
+    #  'spn': SERVICE_POINT,
+    #  'meter': METER,
+    #  'gateway': GATEWAY,
+    #  },
 ]

@@ -149,6 +149,15 @@ def change_billing_dates_payload(spn: str, meter: str, payload_data: dict) -> di
     return payload
 
 
+def change_disconnection_setting_payload(spn: str, meter: str, payload_data: bool) -> dict:
+    payload = default_payload(spn, meter)
+    if payload_data:
+        payload.update({'DisconnectionAllowed': True})
+    else:
+        payload.update({'DisconnectionAllowed': False})
+    return payload
+
+
 def change_tariff_plan_payload(spn: str, meter: str, payload_data: dict) -> dict:
     payload = default_payload(spn, meter)
 
@@ -183,9 +192,9 @@ def change_tariff_plan_payload(spn: str, meter: str, payload_data: dict) -> dict
     return payload
 
 
-def change_event_configuration_payload(spn: str, meter: str, payload_data: dict) -> dict:
+def change_event_configuration_payload(spn: str, meter: str, payload_data: str) -> dict:
     payload = default_payload(spn, meter)
-    payload.update({'EventConfig': payload_data})
+    payload.update({'EventConfig': json.loads(payload_data.replace('\\n', ''))})
     return payload
 
 
@@ -206,7 +215,7 @@ def get_profile_configuration_payload(spn: str, meter: str) -> dict:
     return default_payload(spn, meter)
 
 
-def change_system_parameters_payload(spn: str, meter: str, payload_data: dict) -> dict:
+def change_system_parameters_payload(spn: str, meter: str, payload_data: dict) -> tuple:
     payload = default_payload(spn, meter)
     payload_list = list(payload_data['ParamSettings'].keys())
     payload_list.sort()
@@ -216,4 +225,66 @@ def change_system_parameters_payload(spn: str, meter: str, payload_data: dict) -
 
 
 def get_system_parameters_payload(spn: str, meter: str) -> dict:
+    return default_payload(spn, meter)
+
+
+def change_demand_limit_configuration_payload(spn: str, meter: str, payload_data: str) -> dict:
+    payload = default_payload(spn, meter)
+    payload.update({'DemandLimitConfig': json.loads(payload_data)})
+
+    return payload
+
+
+def get_demand_limit_configuration_payload(spn: str, meter: str) -> dict:
+    return default_payload(spn, meter)
+
+
+def change_data_disclosure_settings_payload(spn: str, meter: str, payload_data: bool) -> dict:
+    payload = default_payload(spn, meter)
+    if payload_data:
+        payload.update({'RestrictDataOnDisplay': True})
+    else:
+        payload.update({'RestrictDataOnDisplay': False})
+    return payload
+
+
+def reset_counters_payload(spn: str, meter: str, payload_data: str) -> dict:
+    payload = default_payload(spn, meter)
+    payload.update({'CounterList': payload_data})
+    return payload
+
+
+def get_meter_diagnostic_data_payload(spn: str, meter: str) -> dict:
+    return default_payload(spn, meter)
+
+
+def set_payment_card_id_payload(spn: str, meter: str, payload_data: str) -> dict:
+    payload = default_payload(spn, meter)
+    payload.update({'PaymentCardId': payload_data})
+    return payload
+
+
+def adjust_meter_time_payload(spn: str, meter: str, payload_data: int) -> dict:
+    payload = default_payload(spn, meter)
+    payload.update({'TimeCorrection': payload_data})
+    return payload
+
+
+def get_snapshot_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
+    payload.update({'SnapshotType': payload_data['SnapshotType']})
+    payload.update({'StartTime': payload_data['StartTime']})
+    payload.update({'EndTime': payload_data['EndTime']})
+    return payload
+
+
+def change_dst_configuration_payload(spn: str, meter: str, payload_data: str) -> dict:
+    payload = default_payload(spn, meter)
+    payload.update({'DstConfig': json.loads(payload_data)})
+    payload['DstConfig'][0]['StartTime'] = rf"/Date({time_in_seconds(payload['DstConfig'][0]['StartTime'])})/"
+    payload['DstConfig'][0]['EndTime'] = rf"/Date({time_in_seconds(payload['DstConfig'][0]['EndTime'])})/"
+    return payload
+
+
+def get_dst_configuration_payload(spn: str, meter: str) -> dict:
     return default_payload(spn, meter)
