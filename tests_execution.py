@@ -98,6 +98,24 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
                 case 'reset_counters':
                     service.reset_counters(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
 
+                case 'publish_change_of_tenancy':
+                    service.publish_change_of_tenancy(tp_number, iteration_from + iteration, header, data_from_xl, spn,
+                                                      meter)
+
+                case 'publish_change_of_supplier':
+                    service.publish_change_of_supplier(tp_number, iteration_from + iteration, header, data_from_xl, spn,
+                                                       meter)
+                
+                case 'set_meter_time':
+                    service.set_meter_time(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
+                
+                case 'set_and_register_payment_card_id':
+                    service.set_and_register_payment_card_id(tp_number, iteration_from + iteration, header,
+                                                             data_from_xl, spn, meter)
+                case 'change_debt_configuration':
+                    service.change_debt_configuration(tp_number, iteration_from + iteration, header, data_from_xl, spn,
+                                                      meter)
+                    
             logger.info(f'{"Execution completed":-^80}')
             logger.info(f'{"":_<80}')
 

@@ -2,7 +2,7 @@ import sys
 import os
 import time
 import logging
-import datetime
+from datetime import datetime, timedelta
 import json
 import excel_management as em
 
@@ -138,14 +138,25 @@ def xl_data_to_list(data_from_xl) -> list:
 
 
 def time_in_seconds(date_time: str):
-    if len(date_time) == 10:
-        obj_datetime = datetime.datetime.strptime(date_time, '%d/%m/%Y')
-    elif len(date_time) == 19:
-        obj_datetime = datetime.datetime.strptime(date_time, '%d/%m/%Y %H:%M:%S')
-    else:
-        raise Exception(f'Invalid date time string.')
+    # Parse the input date string
+    dt = datetime.strptime(date_time, '%d/%m/%Y %H:%M:%S')
 
-    return int((obj_datetime - datetime.datetime(1970, 1, 1)).total_seconds()) * 1000
+    # To change time into UTC time since epoch converting
+    time_zone_of_sys = time.strftime("%z", time.localtime())
+    sign = time_zone_of_sys[0]
+    hours = int(time_zone_of_sys[1:3])
+    minutes = int(time_zone_of_sys[3:5])
+    if sign == '+':
+        dt = dt - timedelta(hours=hours, minutes=minutes)
+    elif sign == '-':
+        dt = dt + timedelta(hours=hours, minutes=minutes)
+    else:
+        raise ValueError("Invalid timezone offset format")
+
+    # Calculate seconds since epoch (Unix timestamp)
+    seconds_since_epoch = int((dt - datetime(1970, 1, 1)).total_seconds()) * 1000
+
+    return seconds_since_epoch
 
 
 def dict_filter(response_dict: dict, kw_filter: list, is_flat: bool = True):
@@ -185,17 +196,16 @@ def add_prefix_in_key(d, prefix):
     return {f"{prefix}_{k}": v for k, v in d.items()}
 
 
-data_kr_list = []
-
-
-def key_rename(data, parent_key=None) -> list[{str, str}]:
+def key_rename(data, parent_key=None, result=None):
+    if result is None:
+        result = []
     for k, v in data.items():
         current_key = f"{parent_key}_{k}" if parent_key else k
-        if type(v) is dict:
-            key_rename(v, current_key)
+        if type(v) is dict:  # Using type() instead of isinstance()
+            key_rename(v, current_key, result)
         else:
-            data_kr_list.append({current_key: v})
-    return data_kr_list
+            result.append({current_key: v})
+    return result
 
 
 def convert_timestamp(input_str):              # -->DD/MM/YYYY HH:MM:SS
@@ -210,9 +220,23 @@ def convert_timestamp(input_str):              # -->DD/MM/YYYY HH:MM:SS
     timestamp = int(timestamp_str)
 
     # Convert timestamp to datetime
-    formatted_time = datetime.datetime.fromtimestamp(timestamp / 1000).strftime('%d/%m/%Y %H:%M:%S')
+    utc_time = datetime.fromtimestamp(timestamp / 1000)
 
-    return formatted_time
+    # Get system timezone offset
+    time_zone_of_sys = time.strftime("%z", time.localtime())
+    sign = time_zone_of_sys[0]
+    hours = int(time_zone_of_sys[1:3])
+    minutes = int(time_zone_of_sys[3:5])
+    if sign == '+':
+        formatted_time = utc_time - timedelta(hours=hours, minutes=minutes)
+    elif sign == '-':
+        formatted_time = utc_time + timedelta(hours=hours, minutes=minutes)
+    else:
+        raise ValueError("Invalid timezone offset format")
+    formatted_time = datetime.strptime(str(formatted_time), '%Y-%m-%d %H:%M:%S')
+    formatted_time = formatted_time.strftime('%d/%m/%Y %H:%M:%S')
+
+    return str(formatted_time)
 
 
 if __name__ == '__main__':

@@ -187,8 +187,9 @@ def change_tariff_plan_payload(spn: str, meter: str, payload_data: dict) -> dict
     payload.update({'TariffScheme': payload_data['TariffScheme']})
     payload.update({'PrepaymentConfig': payload_data['PrepaymentConfig']})
     payload.update({'BillingPeriod': payload_data['BillingPeriod']})
-    payload_data['BillingPeriod']['Interval'][
-        'StartDate'] = rf"/Date({time_in_seconds(payload_data['BillingPeriod']['Interval']['StartDate'])})/"
+    if 'StartDate' in payload_data['BillingPeriod']['Interval']:
+        payload_data['BillingPeriod']['Interval'][
+            'StartDate'] = rf"/Date({time_in_seconds(payload_data['BillingPeriod']['Interval']['StartDate'])})/"
     return payload
 
 
@@ -270,6 +271,13 @@ def adjust_meter_time_payload(spn: str, meter: str, payload_data: int) -> dict:
     return payload
 
 
+def set_meter_time_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
+    payload.update({'MeterTime': payload_data['TimeStamp']})
+    payload.update({'TimeZone': payload_data['TimeZone']})
+    return payload
+
+
 def get_snapshot_payload(spn: str, meter: str, payload_data: dict) -> dict:
     payload = default_payload(spn, meter)
     payload.update({'SnapshotType': payload_data['SnapshotType']})
@@ -287,4 +295,77 @@ def change_dst_configuration_payload(spn: str, meter: str, payload_data: str) ->
 
 
 def get_dst_configuration_payload(spn: str, meter: str) -> dict:
+    return default_payload(spn, meter)
+
+
+def publish_change_of_tenancy_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
+
+    payload.update({'ActionControl': payload_data})
+    return payload
+
+
+def get_meter_events_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
+    payload.update({'EventLogList': json.loads(payload_data['EventLogList'])})
+    payload.update({'StartTime': payload_data['StartTime']})
+    payload.update({'EndTime': payload_data['EndTime']})
+    return payload
+
+
+def publish_change_of_supplier_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
+    payload.update({'SupplierCode': payload_data['SupplierCode']})
+    payload.update({'ActionControl': payload_data['ActionControl']})
+    return payload
+
+
+def get_site_information_payload(spn: str) -> dict:
+    payload = {
+        'HesId': get_hes_id(),
+        'SupplyType': 0,
+        'ServicePointNo': spn
+    }
+    return payload
+
+
+def get_payment_card_information_payload(payload_data: str) -> dict:
+    payload = {
+        'HesId': get_hes_id(),
+        'PaymentCardId': payload_data
+    }
+    return payload
+
+
+def deregister_payment_card_payload(payload_data: str) -> dict:
+    payload = {
+        'HesId': get_hes_id(),
+        'PaymentCardId': payload_data
+    }
+    return payload
+
+
+def register_payment_card_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
+    payload.update({'PaymentCardId': payload_data['PaymentCardId']})
+    payload.update({'CustomerName': payload_data['CustomerName']})
+    payload.update({'VatGroupNo': int(payload_data['VatGroupNo'])})
+    return payload
+
+
+def change_debt_configuration_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
+
+    payload.update({'DebtAccountType': int(float(payload_data['DebtAccountType']))})
+    payload.update({'DebtActionType': int(float(payload_data['DebtActionType']))})
+    if 'OperationMode' in payload_data:
+        payload.update({'OperationMode': int(float(payload_data['OperationMode']))})
+    if 'DebtAmount' in payload_data:
+        payload.update({'DebtAmount': int(float(payload_data['DebtAmount']))})
+    if 'DebtRecoveryInfo' in payload_data:
+        payload.update({'DebtRecoveryInfo': payload_data['DebtRecoveryInfo']})
+    return payload
+
+
+def get_account_details_payload(spn: str, meter: str) -> dict:
     return default_payload(spn, meter)

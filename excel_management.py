@@ -9,7 +9,6 @@ import copy
 
 logger = logging.getLogger('my_logger')
 
-
 # to store all the key values in a dict from a json,
 # used in get_all_keys_values function, clear it before using the function
 list_of_dict = list()
@@ -90,7 +89,7 @@ def read_rows(excel_file_path: str, start_row_index: int | None = None,
 
             # get rows from given start to given end index number
             elif start_row_index is not None and end_row_index is not None:
-                rows_list = [sh.row(row) for row in range(start_row_index-1, end_row_index)]
+                rows_list = [sh.row(row) for row in range(start_row_index - 1, end_row_index)]
 
         return rows_list
 
@@ -168,11 +167,18 @@ def compare_data(file_path: str, sheet_name, ref_column: int, compare_to_column:
                         sheet.cell(row=i, column=compare_to_column).value is not None:
 
                     cell_ref = sheet.cell(row=i, column=compare_in_column)
-
+                    
                     cell_ref.value = \
                         (f'=IF({cell_ref.offset(row=i, column=ref_column - compare_in_column).column_letter}{i}='
                          f'{cell_ref.offset(row=i, column=compare_to_column - compare_in_column).column_letter}{i}, '
                          f'"Pass", "Fail")')
+
+                    if ref_column > 1:
+                        if sheet.cell(row=i, column=ref_column-1).value == 'MeterTime':
+                            cell_ref.value = (f'=IF(((DATE(MID(D4,7,4),MID(D4,4,2),LEFT(D4,2))+TIME(MID(D4,12,2),'
+                                              f'MID(D4,15,2),RIGHT(D4,2)))-(DATE(MID(B4,7,4),MID(B4,4,2),LEFT(B4,2))+'
+                                              f'TIME(MID(B4,12,2),MID(B4,15,2),RIGHT(B4,2))))<=0.00277777777955635,'
+                                              f'"Pass","Fail")')
 
                 else:
                     break
@@ -221,7 +227,12 @@ def get_all_keys_values(data: dict) -> list[{str, str}]:
                         get_all_keys_values(i)
                     elif type(i) is list:
                         # print(k, v)
-                        list_of_dict.append({k: v})
+                        for j in i:
+                            if type(j) is dict:
+                                temp_list.append(k)
+                                get_all_keys_values(j)
+                            else:
+                                list_of_dict.append({k: v})
                 else:
                     if k not in temp_list:
                         # print(k, v)
