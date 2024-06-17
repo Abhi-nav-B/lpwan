@@ -1,5 +1,5 @@
 import json
-import datetime
+from datetime import datetime, timedelta
 import requests
 import logging
 import copy
@@ -9,7 +9,7 @@ import sys  # TO STOP SCRIPT EXECUTION
 from requests.auth import HTTPBasicAuth
 from constants import *
 from common_fn import (exception_log, countdown, duration, xl_data_to_list, dict_filter, add_prefix_in_key, key_rename,
-                       convert_timestamp, time_in_seconds, get_hes_id)
+                       convert_timestamp, time_in_seconds, get_hes_id, start_end_week, get_month_start_end)
 
 # logger = logging.getLogger(__name__)
 logger = logging.getLogger('my_logger')
@@ -1090,6 +1090,7 @@ def change_data_disclosure_settings(tp_number, iteration, spn: str, meter: str):
 def set_payment_card_id(tp_number, iteration, spn: str, meter: str):
     try:
         data_in_json = get_site_information(tp_number, iteration, spn)
+        payment_card_id = None
         for item in data_in_json['DeviceList']:
             if 'PaymentCardId' in item:
                 payment_card_id = item['PaymentCardId']
@@ -1145,6 +1146,7 @@ def get_site_information(tp_number, iteration, spn):
 def get_payment_card_information(tp_number, iteration, spn, kw_filter: list = None):
     try:
         data_in_json = get_site_information(tp_number, iteration, spn)
+        payment_card_id = None
         for item in data_in_json['DeviceList']:
             if 'PaymentCardId' in item:
                 payment_card_id = item['PaymentCardId']
@@ -1713,18 +1715,61 @@ def get_meter_events(tp_number, iteration, header: str, data_from_xl: list, spn:
         data_from_xl['StartTime'] = rf"/Date({time_in_seconds(data_from_xl['StartTime'])})/"
         data_from_xl['EndTime'] = rf"/Date({time_in_seconds(data_from_xl['EndTime'])})/"
 
+        prepayment_based_recovery = None
+
+        if dict_name == 'vend_code':
+            account_details = get_account_details(spn, meter)
+            final_account_balance = account_details['AccountBalance']
+            dict_write = [{'AccountBalance': final_account_balance}]
+            logger.info(f'Final Account Balance: {final_account_balance}')
+            em.write_in_xl(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, dict_write, 7)
+            date = (datetime.now()).strftime('%d/%m/%Y')
+            for item in account_details['DebtAccountInfo']:
+                if item['DebtRecoveryInfo']['DebtRecoveryMethod'] == 1:
+                    prepayment_based_recovery = item['DebtRecoveryInfo']['PaymentBasedRecoveryInfo']
+                    if item['DebtRecoveryInfo']['PaymentBasedRecoveryInfo']['RecoveryCapPeriod'] == 1:
+                        start_date, end_date = start_end_week(date)
+                    elif item['DebtRecoveryInfo']['PaymentBasedRecoveryInfo']['RecoveryCapPeriod'] == 2:
+                        start_date, end_date = get_month_start_end(date)
+                    else:
+                        start_date = datetime.now()
+                        end_date = (start_date + timedelta(days=1)).strftime('%d/%m/%Y 00:00:00')
+                        start_date = start_date.strftime('%d/%m/%Y 00:00:00')
+                    data_from_xl['StartTime'] = rf"/Date({time_in_seconds(start_date)})/"
+                    data_from_xl['EndTime'] = rf"/Date({time_in_seconds(end_date)})/"
+
         # get payload for service
         payload = sp.get_meter_events_payload(spn, meter, data_from_xl)
 
         # print(f'Request Data: {payload}')
         logger.info(f'Request Data: {payload}')
 
+        added_balance = None
+
         response = post_request('GetMeterEvents', payload)
         if response.status_code in [200, 202]:
-            get_meter_events_reply(tp_number, iteration, response.text, dict_name, kw_filter, spn, meter)
+            response = get_meter_events_reply(tp_number, iteration, response.text, dict_name, kw_filter, spn, meter)
+            if response['VendUtrnSnapshots']['VendMode'] == 0:
+                debt_list = []
+                for item in response['PrepayAccountSnapshots']:
+                    if item['AccountType'] == 2:
+                        debt_list.append(item['Amount'])
+                debt_recovered = sum(debt_list)
+
+                vend_amount = [item['VendAmount'] for item in response['VendUtrnSnapshots']][0]
+                credit_percentage = prepayment_based_recovery['CreditPercentange']
+                debt_recovery_cap = prepayment_based_recovery['RecoveryCapAmount']
+                debt_recover = (credit_percentage / 100) * vend_amount
+                if debt_recovered < debt_recovery_cap:
+                    if debt_recovery_cap - debt_recovered >= debt_recover:
+                        added_balance = vend_amount - debt_recover
+                    else:
+                        added_balance = vend_amount - (debt_recovery_cap - debt_recovered)
+
         else:
             # print(STATUS_CODE.get(response.status_code))
             logger.info(STATUS_CODE.get(response.status_code))
+        return added_balance
 
     except Exception as e:
         exception_log(e)
@@ -1764,6 +1809,10 @@ def get_meter_events_reply(tp_number, iteration, wse_id, dict_name: str | None =
                 key = ['SupplyType', 'ServicePointNo', 'DeviceNo', 'PrepayAccountSnapshots', 'DebtChangeSnapshots',
                        'DebtAccountInfo']
 
+            case 'vend_code':
+                key = ['SupplyType', 'ServicePointNo', 'DeviceNo', 'VendUtrnSnapshots', 'PrepayAccountSnapshots']
+                response_dict.update({'VendUtrnSnapshots': response_dict['VendUtrnSnapshots'][-1]})
+
         new_dict.update({element: response_dict[element] for element in key if response_dict.get(element, '') != ''})
 
         filtered_dict = dict_filter(new_dict, kw_filter)
@@ -1773,6 +1822,7 @@ def get_meter_events_reply(tp_number, iteration, wse_id, dict_name: str | None =
         em.compare_data(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, 2, 4, 6)
 
         logger.info(f'Received data is compared with the requested data.')
+        return response_dict
 
     except Exception as e:
         exception_log(e)
@@ -1952,5 +2002,132 @@ def get_account_details_reply(wse_id):
         logger.info(f'Received Data: {response.text}')
         return response_dict
 
+    except Exception as e:
+        exception_log(e)
+
+
+@duration
+def add_set_subtract_meter_balance(tp_number, iteration, header: str, data_from_xl: list, spn: str, meter: str):
+    try:
+        # Get Meter Account Balance
+        account_details = get_account_details(spn, meter)
+        initial_account_balance = account_details['AccountBalance']
+        logger.info(f'Initial Account Balance: {initial_account_balance}')
+
+        # Get Vend Code
+        logger.info(f'Service called: {add_set_subtract_meter_balance.__name__}')
+
+        # converting excel data to a list
+        header = xl_data_to_list(header)
+        data_from_xl = xl_data_to_list(data_from_xl)
+
+        # converting header and data_from_list to dict
+        data_from_xl = dict(zip(header, data_from_xl))
+
+        # get payload for service
+        keys = ['AutoTransfer', 'VendMode', 'VendAmount']
+        data_from_xl = {x: data_from_xl[x] for x in keys}
+
+        payload = sp.get_vend_code_payload(spn, meter, data_from_xl)
+
+        # print(f'Request Data: {payload}')
+        logger.info(f'Request Data: {payload}')
+
+        # remove not required dict items
+        dict_to_update = payload.copy()
+        dict_to_update.pop('HesId')
+        dict_to_update.pop('Priority')
+        if type(dict_to_update['AutoTransfer']) is bool:
+            dict_to_update.pop('AutoTransfer')
+
+        em.list_of_dict.clear()  # clear old data if there is any
+        dict_to_update = em.get_all_keys_values(dict_to_update)
+
+        response = post_request('GetVendCode', payload)
+        if response.status_code in [200, 202]:
+            response = json.loads(response.text)
+            utrn_code = response['UtrnCode']
+            dict_to_update.append({'UtrnCode': utrn_code})
+            em.write_in_xl(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, dict_to_update, 1)
+            if payload['AutoTransfer'] is True:
+                get_vend_code_reply(response)
+            else:
+                send_utrn_code(spn, meter, utrn_code)
+            header = em.read_rows(r".\Database\GetMeterEvents.xls", 1, 1)[0]
+            data_from_xl = em.read_rows(r".\Database\GetMeterEvents.xls", 2, 2)[0]
+            response_account_balance = get_meter_events(tp_number, iteration, header, data_from_xl, spn, meter,
+                                                        'vend_code', [list(item.keys())[0] for item in dict_to_update])
+
+            if payload['VendMode'] == 0:
+                account_balance = response_account_balance + initial_account_balance
+            elif payload['VendMode'] == 1:
+                account_balance = initial_account_balance - payload['VendAmount']
+            else:
+                account_balance = payload['VendAmount']
+
+            dict_write = [{'AccountBalance': account_balance}]
+
+            em.write_in_xl(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, dict_write, 9)
+            em.compare_data(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, 7, 9, 11)
+            em.compare_data(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, 8, 10, 12)
+        else:
+            logger.info(STATUS_CODE.get(response.status_code))
+
+    except Exception as e:
+        exception_log(e)
+
+
+def get_vend_code_reply(response: dict):
+    try:
+        wse_id = response['WseId']
+        response = get_request('GetVendCodeReply', wse_id)
+        response_dict = json.loads(response.text)
+
+        # print(f'Received Data: {response.text}')
+        logger.info(f'Received Data: {response.text}')
+        return response_dict
+    except Exception as e:
+        exception_log(e)
+
+
+def send_utrn_code(spn: str, meter: str, data):
+    try:
+        utrn_code = data
+
+        # print(f'Service called: {set_schedule.__name__})
+        logger.info(f'Service called: {send_utrn_code.__name__}')
+
+        payload = sp.send_utrn_code_payload(spn, meter, utrn_code)
+
+        # print(f'Request Data: {payload}')
+        logger.info(f'Request Data: {payload}')
+
+        # # remove not required dict items
+        # dict_to_update = payload.copy()
+        # dict_to_update.pop('HesId')
+        # dict_to_update.pop('Priority')
+        #
+        # em.list_of_dict.clear()  # clear old data if there is any
+        # dict_to_update = em.get_all_keys_values(dict_to_update)
+        #
+        # em.write_in_xl(rf'{RESULT_PATH}\{tp_number}\{tp_number}_Service.xlsx', iteration, dict_to_update, 7)
+
+        response = post_request('SendUtrnCode', payload)
+        if response.status_code in [200, 202]:
+            get_utrn_code_reply(response.text)
+        else:
+            # print(STATUS_CODE.get(response.status_code))
+            logger.info(STATUS_CODE.get(response.status_code))
+
+    except Exception as e:
+        exception_log(e)
+
+
+def get_utrn_code_reply(wse_id: str):
+    try:
+        response = get_request('GetUtrnCodeReply', wse_id)
+        # print(response)
+        logger.info(response)
+        return response
     except Exception as e:
         exception_log(e)

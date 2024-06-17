@@ -115,6 +115,9 @@ def execute_test(tp_number: str, service_name: str, test_data_path: str,
                 case 'change_debt_configuration':
                     service.change_debt_configuration(tp_number, iteration_from + iteration, header, data_from_xl, spn,
                                                       meter)
+
+                case 'add_set_subtract_meter_balance':
+                    service.add_set_subtract_meter_balance(tp_number, iteration_from + iteration, header, data_from_xl, spn, meter)
                     
             logger.info(f'{"Execution completed":-^80}')
             logger.info(f'{"":_<80}')

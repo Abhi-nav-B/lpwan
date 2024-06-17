@@ -83,15 +83,17 @@ def get_hes_id():
 
 
 def countdown(t):
+    base = t
     t = int(t)
-    while t:  # while t > 0 for clarity
+    while t >= 0:
         minutes = t // 60
         seconds = t % 60
         timer = '{:02d}:{:02d}'.format(minutes, seconds)
-        print(timer, end="\r")  # overwrite previous line
+        print(f'\r{timer} {'_' * int((t / base) * 100)}', end="")  # overwrite previous line
         time.sleep(1)
         t -= 1
-
+    print(' ')
+    
 
 def duration(func):
     def wrapper(*args, **kwargs):
@@ -237,6 +239,34 @@ def convert_timestamp(input_str):              # -->DD/MM/YYYY HH:MM:SS
     formatted_time = formatted_time.strftime('%d/%m/%Y %H:%M:%S')
 
     return str(formatted_time)
+
+
+def start_end_week(date):
+    dt = datetime.strptime(date, '%d/%m/%Y')
+    start = dt - timedelta(days=dt.weekday())
+    end = (start + timedelta(days=6)).strftime('%d/%m/%Y %H:%M:%S')
+    start = start.strftime('%d/%m/%Y %H:%M:%S')
+    return start, end
+
+
+def get_month_start_end(input_date_str):
+    # Parse the input date string
+    input_date = datetime.strptime(input_date_str, "%d/%m/%Y")
+
+    # Extract year and month from the input date
+    year = input_date.year
+    month = input_date.month
+
+    # Start of the month
+    start_date = (datetime(year, month, 1)).strftime('%d/%m/%Y %H:%M:%S')
+
+    # End of the month
+    if month == 12:
+        end_date = (datetime(year, month, 31)).strftime('%d/%m/%Y %H:%M:%S')
+    else:
+        end_date = (datetime(year, month + 1, 1) - timedelta(days=1)).strftime('%d/%m/%Y %H:%M:%S')
+
+    return start_date, end_date
 
 
 if __name__ == '__main__':

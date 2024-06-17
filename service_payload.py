@@ -369,3 +369,19 @@ def change_debt_configuration_payload(spn: str, meter: str, payload_data: dict) 
 
 def get_account_details_payload(spn: str, meter: str) -> dict:
     return default_payload(spn, meter)
+
+
+def get_vend_code_payload(spn: str, meter: str, payload_data: dict) -> dict:
+    payload = default_payload(spn, meter)
+
+    payload.update({'VendMode': int(float(payload_data['VendMode']))})
+    payload.update({'VendAmount': int(float(payload_data['VendAmount']))})
+    if 'AutoTransfer' in payload_data:
+        payload.update({'AutoTransfer': bool(payload_data['AutoTransfer'])})
+    return payload
+
+
+def send_utrn_code_payload(spn: str, meter: str, payload_data: str) -> dict:
+    payload = default_payload(spn, meter)
+    payload.update({'UtrnCode': int(float(payload_data))})
+    return payload
